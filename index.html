@@ -1,0 +1,200 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row =>
+                    row.some(cell => cell !== '' && cell !== null && cell !== undefined)
+                );
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Android Apps</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        .app-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        .app-card:hover {
+            transform: translateY(-4px);
+        }
+        .description {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .description.expanded {
+            -webkit-line-clamp: unset;
+            overflow: visible;
+        }
+        .category-button {
+            transition: background-color 0.2s ease-in-out;
+        }
+        .category-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        @media (max-width: 640px) {
+            .category-button {
+                font-size: 0.875rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-6 shadow-sm">
+        <div class="container mx-auto px-4">
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">My Android App Store</h1>
+            <p class="mt-1 text-sm sm:text-base opacity-90">Explore my collection of 30 Android apps</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Search and Category Filters -->
+        <div class="mb-8 space-y-4">
+            <input id="search-input" type="text" placeholder="Search apps..." class="w-full p-3 rounded-lg border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            <div id="category-filters" class="flex flex-wrap gap-2">
+                <button class="category-button px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 active" data-category="all">All</button>
+                <button class="category-button px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300" data-category="Games">Games</button>
+                <button class="category-button px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300" data-category="Productivity">Productivity</button>
+                <button class="category-button px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300" data-category="Utilities">Utilities</button>
+                <!-- Add more categories as needed -->
+            </div>
+        </div>
+
+        <!-- App Grid -->
+        <div id="app-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <!-- App cards will be dynamically inserted here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-4">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-sm">© 2025 My Android Apps. Hosted on GitHub Pages.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Sample app data (replace with your actual app details)
+        const apps = [
+            { 
+                name: "App 1", 
+                apkLink: "https://example.com/app1.apk", 
+                category: "Games", 
+                description: "A thrilling adventure game with immersive gameplay.", 
+                icon: "https://via.placeholder.com/80"
+            },
+            { 
+                name: "App 2", 
+                apkLink: "https://example.com/app2.apk", 
+                category: "Productivity", 
+                description: "Organize tasks efficiently with this productivity tool.", 
+                icon: "https://via.placeholder.com/80"
+            },
+            { 
+                name: "App 3", 
+                apkLink: "https://example.com/app3.apk", 
+                category: "Utilities", 
+                description: "Optimize your device with this utility app.", 
+                icon: "https://via.placeholder.com/80"
+            },
+            // Add your 30 apps here, e.g.:
+            // { 
+            //     name: "Your App Name", 
+            //     apkLink: "https://your-apk-link.com", 
+            //     category: "Your Category", 
+            //     description: "Your app description", 
+            //     icon: "https://your-icon-url.com/icon.png"
+            // },
+            // Repeat for all 30 apps
+        ];
+
+        // Function to create app cards
+        function createAppCards(filteredApps) {
+            const appGrid = document.getElementById('app-grid');
+            appGrid.innerHTML = '';
+            filteredApps.forEach(app => {
+                const card = document.createElement('div');
+                card.className = 'app-card bg-white rounded-lg shadow-sm p-4 flex flex-col items-center';
+                card.innerHTML = `
+                    <img src="${app.icon}" alt="${app.name} icon" class="w-16 h-16 sm:w-20 sm:h-20 mb-3 rounded-md">
+                    <h2 class="text-base sm:text-lg font-semibold text-gray-800 text-center">${app.name}</h2>
+                    <p class="text-xs sm:text-sm text-gray-500 mb-2">${app.category}</p>
+                    <p class="description text-xs sm:text-sm text-gray-600 mb-3 text-center">${app.description}</p>
+                    <button class="read-more text-blue-500 text-xs sm:text-sm mb-2 hover:underline" onclick="toggleDescription(this)">Read More</button>
+                    <a href="${app.apkLink}" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors">Download</a>
+                `;
+                appGrid.appendChild(card);
+            });
+        }
+
+        // Toggle description
+        function toggleDescription(button) {
+            const description = button.previousElementSibling;
+            description.classList.toggle('expanded');
+            button.textContent = description.classList.contains('expanded') ? 'Read Less' : 'Read More';
+        }
+
+        // Search and filter apps
+        function filterApps() {
+            const searchQuery = document.getElementById('search-input').value.toLowerCase();
+            const selectedCategory = document.querySelector('.category-button.active')?.dataset.category || 'all';
+
+            const filteredApps = apps.filter(app => {
+                const matchesSearch = app.name.toLowerCase().includes(searchQuery);
+                const matchesCategory = selectedCategory === 'all' || app.category === selectedCategory;
+                return matchesSearch && matchesCategory;
+            });
+
+            createAppCards(filteredApps);
+        }
+
+        // Category button event listeners
+        document.querySelectorAll('.category-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.category-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                filterApps();
+            });
+        });
+
+        // Search input event listener
+        document.getElementById('search-input').addEventListener('input', filterApps);
+
+        // Initialize app cards
+        document.addEventListener('DOMContentLoaded', () => createAppCards(apps));
+    </script>
+</body>
+</html>
